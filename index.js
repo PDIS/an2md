@@ -25,15 +25,17 @@ const an2md = (xmlData) => {
         break
       case 'narrative':
         let narrative = ''
-        const source = child.toString()
+        let text = ''
+        let source = child.toString().match(/<i>(.*?)<\/i>/gs)[0]
         if (/<a href="/.test(source)) {
-          let links = ''
-          source.match(/<a(.*?)<\/a>/gs).map(link => {
-            links += `[${link.match(/">(.*?)<\/a>/gs)[0].replace(/">/, '').replace(/<\/a>/, '').trim()}](${link.match(/<a href="(.*?)">/)[1]}) `
+          source.match(/<a(.*?)<\/a>/gs).map(s => {
+            let link = `[${s.match(/">(.*?)<\/a>/gs)[0].replace(/">/, '').replace(/<\/a>/, '').trim()}](${s.match(/<a href="(.*?)">/)[1]}) `
+            source = source.replace(s, link)
           })
-          narrative = `> ${links}\n\n`
+          text = source.replace(/<i>/, '').replace(/<\/i>/, '').replace(/\s/g, '')
+          narrative = `> ${text}\n\n`
         } else {
-          const text = child.text().trim()
+          text = child.text().trim()
           narrative = `> ${text}\n\n`
         }
         md += narrative
