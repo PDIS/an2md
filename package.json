@@ -1,0 +1,23 @@
+{
+  "name": "an2md",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "libxmljs": "^0.19.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PDIS/an2md.git"
+  },
+  "author": "PDIS",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PDIS/an2md/issues"
+  },
+  "homepage": "https://github.com/PDIS/an2md#readme"
+}

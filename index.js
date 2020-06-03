@@ -1,44 +1,53 @@
-const parser = require('fast-xml-parser')
+var libxmljs = require("libxmljs");
 const fs = require('fs')
 
-const [, , ...args] = process.argv
-
-const options = {
-  attributeNamePrefix: "",
-  attrNodeName: "attr",
-  textNodeName: "#text",
-  ignoreAttributes: false,
-  ignoreNameSpace: false,
-  allowBooleanAttributes: false,
-  parseNodeValue: true,
-  parseAttributeValue: true,
-  trimValues: true,
-  cdataTagName: "__cdata",
-  cdataPositionChar: "\\c",
-  parseTrueNumberOnly: false,
-  arrayMode: false,
-};
-
 const an2md = (xmlData) => {
-  if (parser.validate(xmlData) === true) {
-    const jsonObj = parser.parse(xmlData, options);
-    const head = jsonObj.akomaNtoso.debate.debateBody.debateSection.heading
-    const speeches = jsonObj.akomaNtoso.debate.debateBody.debateSection.speech
-
-    const info = `【說明】\n\n:::info\n🏡此為逐字稿共筆頁面，如有任何欲調整自己發言之文字，敬請直接點選於此頁面左上方圖示「筆」進行編修，呈現黑底畫面即可直接編寫，內容無須存檔，系統會自動保存。預定於於10年年月月1日公開，將公開於於 https://pdis.nat.gov.tw/track/ ，非常感謝。\n:::\n\n【以下開始記錄】\n\n`
-    let md = `# ${head}\n\n`
-    md += info
-
-    speeches.map(s => {
-      const speaker = s.attr.by.replace('#', '')
-      const content = s.p
-      const speech = `### ${speaker}：\n${content}\n\n`
-      md += speech
-    })
-    return md
+  const debateSection = xmlDoc.get('//debateSection');
+  const heading = debateSection.get('//heading').text().trim();
+  let info = ''
+  let colon = ''
+  if (CheckEn(heading) === true) {
+    info = `:::info\n🌐 This is a collaborative editor for the meeting transcript. If you want to adjust your own speech, please click on the "Pencil" icon at the top left corner to start editing. The system automatically saves each edit. It is scheduled to be released on 2020-01-09 and will be published at https://pdis.nat.gov.tw/track/ to the [public domain](https://github.com/audreyt/archive.tw/blob/gh-pages/LICENSE). Thank you for your contribution to the commons.\n:::\n\n`
+    colon = ':'
+  } else {
+    info = `【說明】\n\n:::info\n🏡此為逐字稿共筆頁面，如有任何欲調整自己發言之文字，敬請直接點選於此頁面左上方圖示「筆」進行編修，呈現黑底畫面即可直接編寫，內容無須存檔，系統會自動保存。預定於於10年年月月1日公開，將公開於於 https://pdis.nat.gov.tw/track/ ，非常感謝。\n:::\n\n【以下開始記錄】\n\n`
+    colon = '：'
   }
+  let md = `# ${heading}\n\n` + info
+
+  debateSection.childNodes().map(child => {
+    switch (child.name()) {
+      case 'speech':
+        const speaker = child.attr('by').value().replace('#', '')
+        const content = child.text().trim()
+        const speech = `### ${speaker}${colon}\n${content}\n\n`
+        md += speech
+        break
+      case 'narrative':
+        let narrative = ''
+        const source = child.toString()
+        if (/<a href="/.test(source)) {
+          let links = ''
+          source.match(/<a(.*?)<\/a>/gs).map(link => {
+            links += `[${link.match(/">(.*?)<\/a>/gs)[0].replace(/">/, '').replace(/<\/a>/, '').trim()}](${link.match(/<a href="(.*?)">/)[1]}) `
+          })
+          narrative = `> ${links}\n\n`
+        } else {
+          const text = child.text().trim()
+          narrative = `> ${text}\n\n`
+        }
+        md += narrative
+        break
+    }
+  })
+  fs.writeFileSync(process.argv[3], md)
 }
 
-process.stdin.setEncoding('utf8').on('data', data => {
-  process.stdout.write(an2md(data.toString()))
-})
+const CheckEn = (str) => {
+  const reg = /^[a-zA-Z0-9$@$!%*?&#^\-_. +]+$/
+  return reg.test(str)
+}
+
+const xml = fs.readFileSync(process.argv[2], 'utf-8')
+const xmlDoc = libxmljs.parseXml(xml);
+an2md(xmlDoc)
