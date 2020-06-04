@@ -1,4 +1,6 @@
-var libxmljs = require("libxmljs");
+#!/usr/bin/env node
+
+const libxmljs = require("libxmljs");
 const fs = require('fs')
 
 const an2md = (xmlData) => {

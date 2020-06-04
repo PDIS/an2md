@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/PDIS/an2md/issues"
   },
-  "homepage": "https://github.com/PDIS/an2md#readme"
+  "homepage": "https://github.com/PDIS/an2md#readme",
+  "bin": {
+    "an2md": "./index.js"
+  }
 }
