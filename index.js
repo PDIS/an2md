@@ -50,9 +50,13 @@ const an2md = (xmlData) => {
           text = child.text().trim()
           narrative = `> ${text}\n\n`
         } */
-        md += `> ${turndownService
-          .turndown(child.child(1).toString())
-          .replace(/_/g, '')}\n\n`
+        let text = ''
+        if (child.child(1) !== null) {
+          text = child.child(1).toString()
+        } else {
+          text = child.child(0).toString()
+        }
+        md += `> ${turndownService.turndown(text).replace(/_/g, '')}\n\n`
         break
     }
   })
